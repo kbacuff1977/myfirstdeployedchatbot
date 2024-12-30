@@ -3,15 +3,14 @@ import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
 import { initializeChat, generateResponse } from "@/services/chat";
 import { useToast } from "@/components/ui/use-toast";
-
-interface Message {
-  content: string;
-  isAi: boolean;
-}
+import { ApiKeyDialog } from "@/components/ApiKeyDialog";
+import { Button } from "@/components/ui/button";
+import { Key } from "lucide-react";
 
 const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -28,22 +27,14 @@ const Index = () => {
     if (apiKey) {
       initializeChat(apiKey);
     } else {
-      toast({
-        title: "API Key Required",
-        description: "Please enter your Gemini API key in the settings",
-        variant: "destructive",
-      });
+      setShowApiKeyDialog(true);
     }
   }, []);
 
   const handleSendMessage = async (content: string) => {
     const apiKey = localStorage.getItem("GEMINI_API_KEY");
     if (!apiKey) {
-      toast({
-        title: "API Key Required",
-        description: "Please enter your Gemini API key in the settings",
-        variant: "destructive",
-      });
+      setShowApiKeyDialog(true);
       return;
     }
 
@@ -66,6 +57,17 @@ const Index = () => {
 
   return (
     <div className="flex h-screen flex-col bg-background">
+      <div className="flex items-center justify-between border-b px-4 py-2">
+        <h1 className="text-lg font-semibold">Gemini Chat</h1>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowApiKeyDialog(true)}
+        >
+          <Key className="mr-2 h-4 w-4" />
+          API Key
+        </Button>
+      </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message, index) => (
           <ChatMessage
@@ -77,6 +79,10 @@ const Index = () => {
         <div ref={messagesEndRef} />
       </div>
       <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
+      <ApiKeyDialog
+        open={showApiKeyDialog}
+        onOpenChange={setShowApiKeyDialog}
+      />
     </div>
   );
 };
