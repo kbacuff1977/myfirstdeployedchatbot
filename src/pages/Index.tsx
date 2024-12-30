@@ -7,6 +7,11 @@ import { ApiKeyDialog } from "@/components/ApiKeyDialog";
 import { Button } from "@/components/ui/button";
 import { Key } from "lucide-react";
 
+interface Message {
+  content: string;
+  isAi: boolean;
+}
+
 const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
