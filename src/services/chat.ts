@@ -2,6 +2,13 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 let genAI: GoogleGenerativeAI;
 let model: any;
+let chat: any;
+
+interface AISettings {
+  systemInstructions: string;
+  promptPrefix: string;
+  temperature: number;
+}
 
 export const initializeChat = (apiKey: string) => {
   genAI = new GoogleGenerativeAI(apiKey);
@@ -9,9 +16,18 @@ export const initializeChat = (apiKey: string) => {
   console.log("Chat initialized with Gemini");
 };
 
-export const generateResponse = async (message: string) => {
+export const generateResponse = async (
+  message: string,
+  settings: AISettings
+) => {
   try {
-    const result = await model.generateContent(message);
+    const prompt = `${settings.systemInstructions}\n\n${settings.promptPrefix}${message}`;
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: settings.temperature,
+      },
+    });
     const response = await result.response;
     return response.text();
   } catch (error) {

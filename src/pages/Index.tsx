@@ -7,16 +7,33 @@ import { useToast } from "@/components/ui/use-toast";
 import { ApiKeyDialog } from "@/components/ApiKeyDialog";
 import { Button } from "@/components/ui/button";
 import { Key, LogOut } from "lucide-react";
+import { AISettingsDialog } from "@/components/AISettingsDialog";
 
 interface Message {
   content: string;
   isAi: boolean;
 }
 
+interface AISettings {
+  systemInstructions: string;
+  promptPrefix: string;
+  temperature: number;
+}
+
+const defaultSettings: AISettings = {
+  systemInstructions: "",
+  promptPrefix: "",
+  temperature: 0.7,
+};
+
 const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
+  const [settings, setSettings] = useState<AISettings>(() => {
+    const saved = localStorage.getItem("aiSettings");
+    return saved ? JSON.parse(saved) : defaultSettings;
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -56,7 +73,7 @@ const Index = () => {
     setIsLoading(true);
 
     try {
-      const response = await generateResponse(content);
+      const response = await generateResponse(content, settings);
       setMessages((prev) => [...prev, { content: response, isAi: true }]);
     } catch (error) {
       toast({
@@ -72,8 +89,9 @@ const Index = () => {
   return (
     <div className="flex h-screen flex-col bg-background">
       <div className="flex items-center justify-between border-b px-4 py-2">
-        <h1 className="text-lg font-semibold">Gemini Chat</h1>
+        <h1 className="text-lg font-semibold">Emmy's SengineAI</h1>
         <div className="flex gap-2">
+          <AISettingsDialog settings={settings} onSave={setSettings} />
           <Button
             variant="outline"
             size="sm"
@@ -82,11 +100,7 @@ const Index = () => {
             <Key className="mr-2 h-4 w-4" />
             API Key
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSignOut}
-          >
+          <Button variant="outline" size="sm" onClick={handleSignOut}>
             <LogOut className="mr-2 h-4 w-4" />
             Sign Out
           </Button>
@@ -103,10 +117,7 @@ const Index = () => {
         <div ref={messagesEndRef} />
       </div>
       <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
-      <ApiKeyDialog
-        open={showApiKeyDialog}
-        onOpenChange={setShowApiKeyDialog}
-      />
+      <ApiKeyDialog open={showApiKeyDialog} onOpenChange={setShowApiKeyDialog} />
     </div>
   );
 };
