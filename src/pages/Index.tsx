@@ -40,6 +40,8 @@ const Index = () => {
 
   const handleSignOut = () => {
     localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("GEMINI_API_KEY");
+    localStorage.removeItem("userEmail");
     navigate("/signin");
   };
 

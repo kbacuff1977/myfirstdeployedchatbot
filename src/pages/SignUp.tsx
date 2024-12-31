@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { UserPlus } from "lucide-react";
+import { Label } from "@/components/ui/label";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [apiKey, setApiKey] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -17,8 +19,17 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
-      // For now, we'll just simulate a successful registration
+      // Store user data including API key
       localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("userEmail", email);
+      localStorage.setItem(`apiKey_${email}`, apiKey);
+      localStorage.setItem("GEMINI_API_KEY", apiKey);
+      
+      toast({
+        title: "Account created",
+        description: "Your account has been created successfully.",
+      });
+      
       navigate("/");
     } catch (error) {
       toast({
@@ -42,7 +53,9 @@ const SignUp = () => {
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
             <Input
+              id="email"
               type="email"
               placeholder="Email"
               value={email}
@@ -51,11 +64,24 @@ const SignUp = () => {
             />
           </div>
           <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
             <Input
+              id="password"
               type="password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="apiKey">Gemini API Key</Label>
+            <Input
+              id="apiKey"
+              type="password"
+              placeholder="Enter your Gemini API Key"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
               required
             />
           </div>
