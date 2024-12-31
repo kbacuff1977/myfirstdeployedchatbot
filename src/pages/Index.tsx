@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
 import { initializeChat, generateResponse } from "@/services/chat";
 import { useToast } from "@/components/ui/use-toast";
 import { ApiKeyDialog } from "@/components/ApiKeyDialog";
 import { Button } from "@/components/ui/button";
-import { Key } from "lucide-react";
+import { Key, LogOut } from "lucide-react";
 
 interface Message {
   content: string;
@@ -18,6 +19,7 @@ const Index = () => {
   const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -35,6 +37,11 @@ const Index = () => {
       setShowApiKeyDialog(true);
     }
   }, []);
+
+  const handleSignOut = () => {
+    localStorage.removeItem("isAuthenticated");
+    navigate("/signin");
+  };
 
   const handleSendMessage = async (content: string) => {
     const apiKey = localStorage.getItem("GEMINI_API_KEY");
@@ -64,14 +71,24 @@ const Index = () => {
     <div className="flex h-screen flex-col bg-background">
       <div className="flex items-center justify-between border-b px-4 py-2">
         <h1 className="text-lg font-semibold">Gemini Chat</h1>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowApiKeyDialog(true)}
-        >
-          <Key className="mr-2 h-4 w-4" />
-          API Key
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowApiKeyDialog(true)}
+          >
+            <Key className="mr-2 h-4 w-4" />
+            API Key
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSignOut}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Sign Out
+          </Button>
+        </div>
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message, index) => (
