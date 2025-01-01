@@ -8,6 +8,7 @@ import { ApiKeyDialog } from "@/components/ApiKeyDialog";
 import { Button } from "@/components/ui/button";
 import { Key, LogOut } from "lucide-react";
 import { AISettingsDialog } from "@/components/AISettingsDialog";
+import { supabase } from "@/lib/supabase";
 
 interface Message {
   content: string;
@@ -55,7 +56,8 @@ const Index = () => {
     }
   }, []);
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem("isAuthenticated");
     localStorage.removeItem("GEMINI_API_KEY");
     localStorage.removeItem("userEmail");
@@ -69,11 +71,21 @@ const Index = () => {
       return;
     }
 
+    const user = await supabase.auth.getUser();
+    if (!user.data.user) {
+      toast({
+        title: "Error",
+        description: "You must be signed in to send messages.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setMessages((prev) => [...prev, { content, isAi: false }]);
     setIsLoading(true);
 
     try {
-      const response = await generateResponse(content, settings);
+      const response = await generateResponse(content, settings, user.data.user.id);
       setMessages((prev) => [...prev, { content: response, isAi: true }]);
     } catch (error) {
       toast({
