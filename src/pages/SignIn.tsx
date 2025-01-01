@@ -38,6 +38,7 @@ const SignIn = () => {
       console.log("Sign in response:", { data, error });
 
       if (error) {
+        console.error("Sign in error:", error);
         if (error.message.includes("Invalid login credentials")) {
           throw new Error(
             "Invalid email or password. Please check your credentials or sign up if you haven't created an account yet."
