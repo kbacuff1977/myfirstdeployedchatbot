@@ -15,50 +15,41 @@ const SignIn = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    console.log("Checking current session...");
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Current session:", session);
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         navigate("/");
       }
-    });
+    };
+    checkSession();
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    console.log("Attempting sign in with email:", email);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      console.log("Sign in response:", { data, error });
-
       if (error) {
-        console.error("Sign in error:", error);
-        if (error.message.includes("Invalid login credentials")) {
-          throw new Error(
-            "Invalid email or password. Please check your credentials or sign up if you haven't created an account yet."
-          );
-        }
         throw error;
       }
 
-      if (data.session) {
-        toast({
-          title: "Welcome back!",
-          description: "You have successfully signed in.",
-        });
-        navigate("/");
-      }
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully signed in.",
+      });
+      navigate("/");
     } catch (error: any) {
       console.error("Sign in error:", error);
       toast({
         title: "Error signing in",
-        description: error.message,
+        description: error.message === "Invalid login credentials" 
+          ? "Invalid email or password. Please check your credentials or sign up if you haven't created an account yet."
+          : "An error occurred while signing in. Please try again.",
         variant: "destructive",
       });
     } finally {
