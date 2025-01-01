@@ -14,9 +14,10 @@ const SignIn = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Check if user is already signed in
   useEffect(() => {
+    // Check if user is already signed in
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Current session:", session);
       if (session) {
         navigate("/");
       }
@@ -26,6 +27,7 @@ const SignIn = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    console.log("Attempting sign in with email:", email);
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -33,7 +35,11 @@ const SignIn = () => {
         password,
       });
 
-      if (error) throw error;
+      console.log("Sign in response:", { data, error });
+
+      if (error) {
+        throw error;
+      }
 
       if (data.session) {
         toast({
@@ -43,9 +49,10 @@ const SignIn = () => {
         navigate("/");
       }
     } catch (error: any) {
+      console.error("Sign in error:", error);
       toast({
-        title: "Error",
-        description: error.message || "Invalid credentials. Please try again.",
+        title: "Error signing in",
+        description: error.message || "Please check your credentials and try again.",
         variant: "destructive",
       });
     } finally {
