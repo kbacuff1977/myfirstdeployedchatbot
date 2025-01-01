@@ -58,9 +58,6 @@ const Index = () => {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("GEMINI_API_KEY");
-    localStorage.removeItem("userEmail");
     navigate("/signin");
   };
 
@@ -71,8 +68,8 @@ const Index = () => {
       return;
     }
 
-    const user = await supabase.auth.getUser();
-    if (!user.data.user) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
       toast({
         title: "Error",
         description: "You must be signed in to send messages.",
@@ -85,7 +82,7 @@ const Index = () => {
     setIsLoading(true);
 
     try {
-      const response = await generateResponse(content, settings, user.data.user.id);
+      const response = await generateResponse(content, settings, session.user.id);
       setMessages((prev) => [...prev, { content: response, isAi: true }]);
     } catch (error) {
       toast({
