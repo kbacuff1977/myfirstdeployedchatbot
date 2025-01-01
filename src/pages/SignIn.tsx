@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { LogIn } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { supabase } from "@/lib/supabase";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -13,32 +14,38 @@ const SignIn = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Check if user is already signed in
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate("/");
+      }
+    });
+  }, [navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // Retrieve the API key associated with this email
-      const storedApiKey = localStorage.getItem(`apiKey_${email}`);
-      
-      if (storedApiKey) {
-        localStorage.setItem("isAuthenticated", "true");
-        localStorage.setItem("userEmail", email);
-        localStorage.setItem("GEMINI_API_KEY", storedApiKey);
-        
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      if (data.session) {
         toast({
           title: "Welcome back!",
           description: "You have successfully signed in.",
         });
-        
         navigate("/");
-      } else {
-        throw new Error("Invalid credentials");
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Invalid credentials. Please try again.",
+        description: error.message || "Invalid credentials. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -84,7 +91,7 @@ const SignIn = () => {
             disabled={isLoading}
           >
             <LogIn className="mr-2 h-4 w-4" />
-            Sign In
+            {isLoading ? "Signing in..." : "Sign In"}
           </Button>
         </form>
         <div className="text-center text-sm">
