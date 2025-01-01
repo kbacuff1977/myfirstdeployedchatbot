@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { LogIn } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -15,7 +15,7 @@ const SignIn = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is already signed in
+    console.log("Checking current session...");
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log("Current session:", session);
       if (session) {
@@ -39,7 +39,9 @@ const SignIn = () => {
 
       if (error) {
         if (error.message.includes("Invalid login credentials")) {
-          throw new Error("Invalid email or password. If you haven't created an account yet, please sign up first.");
+          throw new Error(
+            "Invalid email or password. Please check your credentials or sign up if you haven't created an account yet."
+          );
         }
         throw error;
       }
@@ -95,11 +97,7 @@ const SignIn = () => {
               required
             />
           </div>
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isLoading}
-          >
+          <Button type="submit" className="w-full" disabled={isLoading}>
             <LogIn className="mr-2 h-4 w-4" />
             {isLoading ? "Signing in..." : "Sign In"}
           </Button>
