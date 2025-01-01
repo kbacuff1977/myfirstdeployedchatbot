@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { LogIn } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -38,6 +38,9 @@ const SignIn = () => {
       console.log("Sign in response:", { data, error });
 
       if (error) {
+        if (error.message.includes("Invalid login credentials")) {
+          throw new Error("Invalid email or password. If you haven't created an account yet, please sign up first.");
+        }
         throw error;
       }
 
@@ -52,7 +55,7 @@ const SignIn = () => {
       console.error("Sign in error:", error);
       toast({
         title: "Error signing in",
-        description: error.message || "Please check your credentials and try again.",
+        description: error.message,
         variant: "destructive",
       });
     } finally {
