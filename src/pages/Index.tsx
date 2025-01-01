@@ -8,7 +8,7 @@ import { ApiKeyDialog } from "@/components/ApiKeyDialog";
 import { Button } from "@/components/ui/button";
 import { Key, LogOut } from "lucide-react";
 import { AISettingsDialog } from "@/components/AISettingsDialog";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   content: string;
